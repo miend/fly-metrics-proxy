@@ -8,7 +8,7 @@ use tokio;
 #[derive(Clone, Debug, serde::Deserialize)]
 struct MetricsTarget {
     endpoint: String,
-    queue_name: String,
+    app_name: String,
 }
 
 #[derive(Clone)]
@@ -44,7 +44,7 @@ async fn metrics_handler(State(state): State<AppState>) -> impl IntoResponse {
     let mut gathered_metrics: Vec<String> = Vec::new();
 
     for target in state.targets {
-        match get_metric_lines(&target.endpoint, &target.queue_name).await {
+        match get_metric_lines(&target.endpoint, &target.app_name).await {
             Ok(lines) => {
                 for line in lines {
                     if !gathered_metrics.contains(&line) {
@@ -68,7 +68,7 @@ async fn metrics_handler(State(state): State<AppState>) -> impl IntoResponse {
     return (StatusCode::OK, [("content-type", "text/plain")], response).into_response();
 }
 
-async fn get_metric_lines(endpoint: &str, queue_name: &str) -> Result<Vec<String>, String> {
+async fn get_metric_lines(endpoint: &str, app_name: &str) -> Result<Vec<String>, String> {
     let client = Client::new();
 
     match client.get(endpoint).send().await {
@@ -86,7 +86,7 @@ async fn get_metric_lines(endpoint: &str, queue_name: &str) -> Result<Vec<String
                         let modified_line = format!(
                             "{}{} {}",
                             split_line.0,
-                            format!("{{app_name=\"{}\"}}", queue_name),
+                            format!("{{app_name=\"{}\"}}", app_name),
                             split_line.1
                         );
                         modified_lines.push(modified_line.to_owned());
