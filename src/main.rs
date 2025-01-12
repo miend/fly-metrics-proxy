@@ -2,6 +2,7 @@ use axum::{extract::State, http::StatusCode, response::IntoResponse, routing::ge
 use reqwest::Client;
 use serde;
 use serde_json;
+use std::error::Error;
 use tokio;
 
 #[derive(Clone, Debug, serde::Deserialize)]
@@ -98,6 +99,13 @@ async fn get_metric_lines(endpoint: &str, queue_name: &str) -> Result<Vec<String
             }
             Err(e) => Err(format!("Error reading text of metrics: {}", e)),
         },
-        Err(e) => Err(format!("Error fetching metrics: {}", e)),
+        Err(e) => {
+            let mut source = e.source();
+            while let Some(e) = source {
+                eprintln!("Caused by: {}", e);
+                source = e.source();
+            }
+            Err(format!("Error fetching metrics: {}", e))
+        }
     }
 }
