@@ -8,11 +8,11 @@ primary_region = 'dfw'
 [
   {
     "endpoint": "https://example.com/1/metrics",
-    "queue_name": "metrics_1"
+    "labels": {"app_name": "example_1", "environment": "production"}
   },
   {
     "endpoint": "https://example.com/2/metrics",
-    "queue_name": "metrics_2"
+    "labels": {"app_name": "example_2", "environment": "staging", "service": "frontend"}
   }
 ]
 """
